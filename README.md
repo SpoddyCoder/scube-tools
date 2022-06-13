@@ -28,7 +28,7 @@ scube-find-pod-and bash my-app
 cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
 chmod +x /usr/local/bin/scube-launch-dashboard
 
-scube-launch-dasboard
+scube-launch-dashboard
 ```
 
 ## `find-pod-and`
@@ -41,11 +41,11 @@ If a pod has multiple containers, each is shown.
 eg: `./find-pod-and bash my-app -A`
 
 * commands:
-    * `bash`        - `/bin/bash` into container
-    * `sh`          - `/bin/sh` into container
+    * `bash`        - /bin/bash into container
+    * `sh`          - /bin/sh into container
     * `log`         - show container logs (`logs` also works)
     * `tail`        - tail container logs
-    * `describe`    - `describe` the pod
+    * `describe`    - describe the pod
     * `help`        - show usage info (`--help` also works)
 
 * namespace (optional):
