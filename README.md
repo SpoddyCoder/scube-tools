@@ -10,28 +10,28 @@ These should all be considered beta, only my setups / systems have been tested. 
 * `kubectl` installed
 * `~/.kube/config` exists
 * All commands use the `current-context` defined in `~/.kube/config`
-    * If you manage multiple clusters, check you're using the right context
+    * If you manage multiple clusters, check you are using the right context!
 * You have correct permissions for the namespaces + resources you want to query
 
-The tools can be run directly, so just copy them wherever you need. eg: `./find-pod-and tail my-app`
+The tools can be run directly, so just copy them wherever you need and then run, eg: `./find-pod-and tail my-app`
 
 If you want these to be available system wide, you can do something like this (assuming `/usr/local/bin/` is in your `$PATH`)...
 
 ```
 git clone https://github.com/SpoddyCoder/scube-tools/ 
 
-cp -a scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
+cp scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
 chmod +x /usr/local/bin/scube-find-pod-and
 
 scube-find-pod-and bash my-app
 
-cp -a scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
+cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
 chmod +x /usr/local/bin/scube-launch-dashboard
 
 scube-launch-dasboard
 ```
 
-## find-pod-and
+## `find-pod-and`
 
 Search running pods and list matches, select one from the list and do `[command]`.
 If a pod has multiple containers, each is shown.
@@ -112,7 +112,7 @@ Select container number (or Enter to exit): 3
 1000.99.99.99 - - [12/Jun/2022:22:31:59 +0000] "GET /howaboutthis HTTP/1.1" 404 555 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36" "999.22.33.44"
 ```
 
-## launch-dashboard
+## `launch-dashboard`
 
 Launches the Kubernetes dashboard resources, starts the proxy and opens the browser window with the token copied to the clipboard, ready to use.
 Removes the resources on exit.
