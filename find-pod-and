@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+#
+# tool to find a pod by search term
+#   - lists all matching pods & containers
+#   - allows user to select one
+#   - do a range of actions:
+#       - shell into container
+#       - view / tail container logs
+#       - describe pod
+#
+# TODO:
+#   include the container name in search as well as namespace + pod name
+#   main loop is a bit 'bash-y' - use to arrays for better maintainability / readability
+#
+
+# version
+VER=0.9.3
+
+
+########################
+# fixed conf
+#
+# valid commands
+CONTAINER_COMMANDS="bash sh log logs tail"
+POD_COMMANDS="describe"
+COMMANDS="$CONTAINER_COMMANDS $POD_COMMANDS"
+
+########################
+# functions
+#
+# show help
+usage() {
+    echo "Search running pods and list matches"
+    echo "Select one from the list and do [command]"
+    echo "If a pod has multiple containers, each is shown"
+    echo
+    echo "$0 [command] [searchterm] [namespace]"
+    echo
+    echo "eg: $0 bash my-app -A"
+    echo
+    echo "commands:"
+    echo "  bash            - /bin/bash into a container"
+    echo "  sh              - /bin/sh into a container"
+    echo "  log             - show container logs (logs also works)"
+    echo "  tail            - tail container logs"
+    echo "  describe        - describe the pod"
+    echo "  help            - show usage info (--help also works)"
+    echo
+    echo "namespace (optional):"
+    echo "  no value        - search the current namespace in the current context"
+    echo "  -A              - search across all namepsaces"
+    echo "  mynamespace     - search in mynamespace"
+    echo
+    echo
+    echo "v${VER} https://github.com/SpoddyCoder/scube-tools/find-pod-and"
+    echo
+}
+
+# $1 = error message
+errMsg() {
+    echo -e "Error: ${1}\n"
+}
+
+
+########################
+# start
+#
+echo
+
+# display help (also respond to --help)
+if [ "$#" -gt "0" ]; then
+    if [[ "$1" == "help" || "$1" == "--help" ]; then
+        usage
+        exit 1
+    fi
+fi
+
+# check valid params
+if [[ "$#" != "2" && "$#" != "3" ]]; then
+    usage
+    exit 1
+fi
+
+# command
+command=$1
+if [[ ! $COMMANDS =~ (^|[[:space:]])$command($|[[:space:]]) ]]; then
+    errMsg "invalid command"
+    usage
+    exit 1
+fi
+if [[ $POD_COMMANDS =~ (^|[[:space:]])$command($|[[:space:]]) ]]; then
+    pod_command=true
+else
+    pod_command=false
+fi
+
+# search term
+search=$2
+if [[ "$search" == "-A" && "$#" == "2" ]]; then
+    errMsg "no search term specified"
+    usage
+    exit 1
+fi
+
+# namespace 
+if [ "$#" == "3" ]; then
+    if [ "$3" == "-A" ]; then 
+        namespace="-A"
+        ns_label="across all namespaces"
+    else
+        namespace=$3
+        ns_label="in namespace: $namespace"
+    fi
+else
+    namespace=$(kubectl config view --minify -o jsonpath='{..namespace}')
+    ns_label="in namespace: $namespace"
+fi
+
+# lets go...
+search_label=$( [ "$pod_command" = true ] && echo "pods" || echo "containers" )
+echo "Searching for $search_label matching '$search' $ns_label"
+
+# query pods
+if [ "$namespace" == "-A" ]; then
+    podlist=$(kubectl get pod -A -o wide)
+else
+    podlist=$(kubectl get pod -n $namespace -o wide)
+fi
+
+# search podlist
+if [ "$namespace" == "-A" ]; then
+    # by both name + namespace
+    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1" "$2}' | grep $search)
+else
+    # by name only
+    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1}' | grep $search)
+fi
+
+# get containers running inside each pod
+container_list=""
+display_list=""
+cnt=0
+while read pod; do
+    if [ "$namespace" == "-A" ]; then
+        podns=$(echo $pod | awk '{print $1}')
+        podname=$(echo $pod | awk '{print $2}')
+    else
+        podns=$namespace
+        podname=$(echo $pod | awk '{print $1}')
+    fi
+    # check if pod has containers (should)
+    containers=$(kubectl get pods $podname -n $podns -o jsonpath='{.spec.containers[*].name}')
+    #containers="nginx varnish"     # test mutliple container output
+    if [ "$?" != "0" ]; then
+        # in the event of an error, just show the pod info, pod level commands should still work
+        cnt=$((cnt+1))
+        display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname")
+        container_list=$(echo -e "${container_list}\n$cnt $podns $podname")
+    else
+        for container in $containers; do
+            cnt=$((cnt+1))
+            display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname -> $container")
+            container_list=$(echo -e "${container_list}\n$cnt $podns $podname $container")
+        done
+    fi
+done <<< "$results"
+
+if [ $(echo "$results" | xargs | wc -l) == 0 ]; then
+    echo "None found"
+    exit 0
+else
+    echo "$display_list"
+fi
+
+# get user pod/container selection from list
+echo
+select_label=$( [ "$pod_command" = true ] && echo "pod" || echo "container" )
+read -p "Select $select_label number (or Enter to exit): " selected
+if [ -z "$selected" ]; then
+    echo "User cancelled"
+    exit 0
+fi
+entry=$(echo "$container_list" | grep "^$selected")
+if [ $(echo "$entry" | xargs | wc -l) == 0 ]; then
+    errMsg "invalid selection"
+    exit 1
+fi
+ns=$(echo $entry | awk '{print $2}')
+pod=$(echo $entry | awk '{print $3}')
+container=$(echo $entry | awk '{print $4}')
+
+# and run the selected command on it...
+echo
+args="-n $ns"
+if [ ! -z "$container" ]; then
+    args="${args} -c $container"
+fi
+case $command in
+
+    bash)
+        kubectl exec -it $pod $args -- /bin/bash 
+        ;;
+
+    sh)
+        kubectl exec -it $pod $args -- /bin/sh 
+        ;;
+
+    log*)
+        kubectl logs $pod $args
+        ;;
+
+    tail)
+        kubectl logs -f $pod $args
+        ;;
+
+    describe)
+        kubectl describe pod $pod -n $ns
+        ;;
+
+    *)
+        errMsg "unknown command '$command'"
+        exit 1
+        ;;
+
+esac
+
+# exit success
+echo
+exit 0

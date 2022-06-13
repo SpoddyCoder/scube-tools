@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+#
+# tool to launch the 'kubernetes-dashboard': https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+# in a useful, but also overly-zealous resource efficient manner
+#   gets token for dashboard login and copies it to clipboard (Mac only - will output to STDOUT if "pbcopy" not found)
+#   re-launches the dashboard pods
+#   start the kubectl proxy
+#   open a browser tab with the dashbaord url
+#
+# listen for CTRL+C to quit
+#   stop the proxy
+#   delete the dashboard pods
+#
+# if the kubectl proxy is already running
+#   will just copy a new token to the clipboard (useful if your sessionm times out)
+#
+
+# version
+VER=0.9.4
+
+
+########################
+# user conf
+# these can be overridden, see README
+#
+
+# service name you want to generate a login token for
+DASHBOARD_SERVICE_NAME="k8s-dashboard-admin"
+
+# number of pods to deploy when bringing the dashboard back up
+DEPLOYMENT_SCALE=1
+
+# browser used to open the dashbaoard proxy url
+BROWSER_PATH="/Applications/Google Chrome.app"
+
+# default query to show when browser opens - this suitable for a cluster admin only...
+LAUNCH_QUERY="workloads?all-namepsaces=&namespace=_all"
+
+# use custom config if found
+if [ -f /etc/scube-tools/launch-dashboard.conf ]; then
+    source /etc/scube-tools/launch-dashboard.conf
+fi
+if [ -f ~/.scube-tools/launch-dashboard.conf ]; then
+    source ~/.scube-tools/launch-dashboard.conf
+fi
+if [ -f ./.launch-dashboard.conf ]; then
+    source ./.launch-dashboard.conf
+fi
+
+
+########################
+# fixed conf
+#
+
+# kubernetes-dashboard component names
+DASHBAORD_NAMESPACE="kubernetes-dashboard"
+DASHBOARD_DEPLOYMENT_NAME="kubernetes-dashboard"
+METRICS_DEPLOYMENT_NAME="dashboard-metrics-scraper"
+# the proxy dashboard url
+DASHBOARD_URI="http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+BROWSER_URL="${DASHBOARD_URI}#/${LAUNCH_QUERY}"
+# Mac pbcopy path - if this doesn't exist, will just output the token to STDOUT
+PBCOPY_PATH="/usr/bin/pbcopy"
+
+
+########################
+# functions
+#
+
+# cleanup resources before quitting
+# optionally exit with error code 1 by passing $1="error"
+function cleanup()
+{
+    if [ ! -z $BG_PID ]; then
+        echo
+        echo "Stopping kubectl proxy"
+        kill $BG_PID
+    fi
+    if (( $(kubectl get replicaset -n $DASHBAORD_NAMESPACE | grep $DASHBOARD_DEPLOYMENT_NAME | tr -s ' ' | cut -f2 -d' ') > 0 )); then
+        echo "Removing kubernetes-dashboard pods"
+        kubectl scale -n $DASHBAORD_NAMESPACE --replicas=0 deployment/$DASHBOARD_DEPLOYMENT_NAME
+        kubectl scale -n $DASHBAORD_NAMESPACE --replicas=0 deployment/$METRICS_DEPLOYMENT_NAME
+    fi
+    if [[ "$#" == 1 && "$1" == "error" ]]; then
+        exit 1
+    fi
+    exit 0
+}
+
+# generate new token and copy to clipboard / output to STDOUT
+function genNewToken()
+{
+    token=$(kubectl -n $DASHBAORD_NAMESPACE create token $DASHBOARD_SERVICE_NAME)
+    if [ "$?" -ne "0" ]; then
+        cleanup "error"  # kill off resouces and exit 1
+    fi
+
+    if [ -f "$PBCOPY_PATH" ]; then
+        echo $token | pbcopy    # mac only
+        echo "Generated $DASHBOARD_SERVICE_NAME token and copied to clipboard"
+    else
+        echo "Generated $DASHBOARD_SERVICE_NAME token..."
+        echo "$token"
+    fi
+}
+
+# open new browser, showing default query
+function openBrowser()
+{
+    echo "Opening $BROWSER_PATH"
+    echo "Navigating to $BROWSER_URL"
+    /usr/bin/open -a "$BROWSER_PATH" "$BROWSER_URL"
+}
+
+
+########################
+# start
+#
+
+trap cleanup INT    # handle CRTL+C quit
+
+genNewToken
+
+# redeploy dashboard pods if not already running
+if (( $(kubectl get replicaset -n $DASHBAORD_NAMESPACE | grep $DASHBOARD_DEPLOYMENT_NAME | tr -s ' ' | cut -f2 -d' ') == 0 )); then
+
+    echo "Redeploying the dashboard pods (scale: $DEPLOYMENT_SCALE)"
+    kubectl scale -n $DASHBAORD_NAMESPACE --replicas=$DEPLOYMENT_SCALE deployment/$DASHBOARD_DEPLOYMENT_NAME
+    kubectl scale -n $DASHBAORD_NAMESPACE --replicas=$DEPLOYMENT_SCALE deployment/$METRICS_DEPLOYMENT_NAME
+    # wait for the kubernetes-dashboard deployment to complete
+    kubectl -n $DASHBAORD_NAMESPACE rollout status deployment $DASHBOARD_DEPLOYMENT_NAME
+
+fi
+
+# start the kubectl proxy if not already running & open the browser
+if [ "$(ps aux | grep -w '[k]ubectl proxy' | wc -l)" -eq "0" ]; then
+
+    echo "Starting kubectl proxy"
+    # put the process in the background and get the pid
+    kubectl proxy &
+    BG_PID=$!
+    sleep 1 # allow a beat for the proxy to init
+    openBrowser
+    echo "kubectl proxy is running (CTRL+C to exit)"
+    wait
+
+else
+
+    openBrowser
+
+fi 
+
+exit 0
