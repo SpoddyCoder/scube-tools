@@ -14,7 +14,7 @@
 #
 
 # version
-VER=0.9.5
+VER=0.9.6
 
 
 ########################
@@ -150,20 +150,22 @@ while read pod; do
         podns=$namespace
         podname=$(echo $pod | awk '{print $1}')
     fi
-    # check if pod has containers (should)
-    containers=$(kubectl get pods $podname -n $podns -o jsonpath='{.spec.containers[*].name}')
-    #containers="nginx varnish"     # test mutliple container output
-    if [ "$?" != "0" ]; then
-        # in the event of an error, just show the pod info, pod level commands should still work
-        cnt=$((cnt+1))
-        display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname")
-        container_list=$(echo -e "${container_list}\n$cnt $podns $podname")
-    else
-        for container in $containers; do
+    if [ ! -z $podname ]; then
+        # check if pod has containers (should)
+        containers=$(kubectl get pods $podname -n $podns -o jsonpath='{.spec.containers[*].name}')
+        #containers="nginx varnish"     # test mutliple container output
+        if [ "$?" != "0" ]; then
+            # in the event of an error, just show the pod info, pod level commands should still work
             cnt=$((cnt+1))
-            display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname -> $container")
-            container_list=$(echo -e "${container_list}\n$cnt $podns $podname $container")
-        done
+            display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname")
+            container_list=$(echo -e "${container_list}\n$cnt $podns $podname")
+        else
+            for container in $containers; do
+                cnt=$((cnt+1))
+                display_list=$(echo -e "${display_list}\n${cnt}) ${podns}: $podname -> $container")
+                container_list=$(echo -e "${container_list}\n$cnt $podns $podname $container")
+            done
+        fi
     fi
 done <<< "$results"
 
