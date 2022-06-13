@@ -13,25 +13,30 @@ These should all be considered beta, only my setups / systems have been tested. 
     * If you manage multiple clusters, check you are using the right context!
 * You have correct permissions for the namespaces + resources you want to query
 
-The tools can be run directly, so just copy them wherever you need and then run, eg: `./find-pod-and tail my-app`
+The tools can be run directly, so just copy wherever you need and run...
 
-If you want these to be available system wide, you can do something like this (assuming `/usr/local/bin/` is in your `$PATH`)...
+eg: `./find-pod-and tail my-app`
+
+If you want them available system wide, do something like this...
 
 ```
-git clone https://github.com/SpoddyCoder/scube-tools/ 
-
 sudo cp scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
-
-scube-find-pod-and bash my-app
-
 sudo cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
+```
+
+Then run the commands as you would any other on your system (assuming `/usr/local/bin/` is in your `$PATH`)...
+
+```
+scube-find-pod-and tail my-app
 
 scube-launch-dashboard
 ```
 
 ## `find-pod-and`
 
-Search running pods and list matches, select one from the list and do `[command]`.
+Beacuse who hasn't had enough of using `kubectl` to query running pods, then copying auto-generated deployment id's into a second `kubectl` command?
+
+Search running pods by `[searchterm]` and list matches, select one from the list and do `[command]`.
 If a pod has multiple containers, each is shown.
 
 `./find-pod-and [command] [searchterm] [namespace]`
@@ -56,7 +61,7 @@ eg: `./find-pod-and bash my-app -A`
 Shell into a container...
 
 ```
-find-pod-and bash example
+scube-find-pod-and bash example
 
 Searching for containers matching 'example' in namespace: default
 
@@ -68,10 +73,28 @@ root@example-app-1-deployment-1d23456789-9876:/# service nginx status
 nginx is running.
 ```
 
-Get logs for kube-system core components...
+Tail application logs...
 
 ```
-find-pod-and log kube -A
+scube-find-pod-and tail app-1 my-app
+
+Searching for containers matching 'app-1' in namespace: my-app
+
+1) my-app: app-1-mysql-deployment-1298379231-1298 -> mysql
+2) my-app: example-app-1-deployment-1d23456789-9876 -> varnish
+3) my-app: example-app-1-deployment-1d23456789-9876 -> nginx
+
+Select container number (or Enter to exit): 3
+
+1000.99.99.99 - - [12/Jun/2022:22:31:52 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36" "999.22.33.44"
+2022/06/12 22:31:59 [error] 30#30: *1 open() "/usr/share/nginx/html/howaboutthis" failed (2: No such file or directory), client: 999.22.33.44, server: localhost, request: "GET /howaboutthis HTTP/1.1", host: "test.example.com"
+1000.99.99.99 - - [12/Jun/2022:22:31:59 +0000] "GET /howaboutthis HTTP/1.1" 404 555 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36" "999.22.33.44"
+```
+
+Get logs from kube-system core components...
+
+```
+scube-find-pod-and log kube -A
 
 Searching for containers matching 'kube' across all namespaces
 
@@ -92,46 +115,27 @@ CoreDNS-55.5.5
 linux/amd64, go5.55.5, 555555
 ```
 
-Tail application logs...
-
-```
-find-pod-and tail app-1 my-app
-
-Searching for containers matching 'app-1' in namespace: my-app
-
-1) my-app: app-1-mysql-deployment-1298379231-1298 -> mysql
-2) my-app: example-app-1-deployment-1d23456789-9876 -> varnish
-3) my-app: example-app-1-deployment-1d23456789-9876 -> nginx
-
-Select container number (or Enter to exit): 3
-
-1000.99.99.99 - - [12/Jun/2022:22:31:52 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36" "999.22.33.44"
-2022/06/12 22:31:59 [error] 30#30: *1 open() "/usr/share/nginx/html/howaboutthis" failed (2: No such file or directory), client: 999.22.33.44, server: localhost, request: "GET /howaboutthis HTTP/1.1", host: "test.example.com"
-1000.99.99.99 - - [12/Jun/2022:22:31:59 +0000] "GET /howaboutthis HTTP/1.1" 404 555 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36" "999.22.33.44"
-```
 
 ## `launch-dashboard`
 
-Launches the Kubernetes dashboard resources, starts the proxy and opens the browser window with the token copied to the clipboard, ready to use.
-Removes the resources on exit.
+Frugal kubernetes-dashboardery! Why have pods running when no-one's looking? 
+This makes accessing the dashboard as simple as it can possibly get...
 
-* Launch the 'kubernetes-dashboard': https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
-* In a useful, but also overly-zealous resource efficient manner
-    * gets token for dashboard login and copies it to clipboard (Mac only - will output to STDOUT if "pbcopy" not found)
-    * redeploy the dashboard pods
-    * start the kubectl proxy
-    * open a browser tab with the dashbaord url
-    * configurable:
-        * service name to gen token for (default: `k8s-dashboard-admin`)
-        * default query on browser open (default `"workloads?all-namepsaces=&namespace=_all`)
-        * browser app to use (default: `/Applications/Google Chrome.app` mac chrome)
-        * scale of kubernetes-dashboard pods when deploying (default: `1`)
+```
+scube-launch-dashboard
+```
+
+* Get a new token for dashboard login and copy it to clipboard
+    * Mac only - will print to STDOUT if "pbcopy" not found
+* Redeploy the dashboard pods
+* Start the `kubectl proxy`
+* Open a new browser tab with the dashbaord url
 * Listen for CTRL+C quit
-    * stop the proxy
-    * undeploy the dashboard pods
+    * Stop the proxy
+    * Undeploy the dashboard pods
 * If the kubectl proxy is already running
-    * will just copy a new token to the clipboard
-    * useful if your session times out
+    * Just copy new token to the clipboard
+    * Useful if your dashboard browser session times out
 
 ### Kubernetes Dashboard Service Acccounts
 
@@ -165,9 +169,21 @@ Warning: ensure you understand the consequences, this gives the `k8s-daashboard-
 
 ### Configuration
 
-See the tool for the user config variable names and their descriptions. 
+Configurable settings;
+
+* service name to gen token for
+  * default: `k8s-dashboard-admin`
+* default query on browser open
+  * default `"workloads?all-namepsaces=&namespace=_all`
+* browser app to use
+  * default: `/Applications/Google Chrome.app` - mac chrome
+* scale of kubernetes-dashboard pods when deploying
+  * default: `1`
+
 The tool looks for config files at different locations, they are applied in the follwoing order, each overriding values in the previous...
 
 * System config: `/etc/scube-tools/launch-dashboard.conf`
 * User config: `~/.scube-tools/launch-dashboard.conf`
 * Directory config: `.launch-dashboard.conf`
+
+See the tool for the user config variable names and their descriptions. 
