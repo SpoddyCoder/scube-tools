@@ -20,13 +20,11 @@ If you want these to be available system wide, you can do something like this (a
 ```
 git clone https://github.com/SpoddyCoder/scube-tools/ 
 
-cp scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
-chmod +x /usr/local/bin/scube-find-pod-and
+sudo cp scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
 
 scube-find-pod-and bash my-app
 
-cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
-chmod +x /usr/local/bin/scube-launch-dashboard
+sudo cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
 
 scube-launch-dashboard
 ```
