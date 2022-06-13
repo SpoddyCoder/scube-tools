@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
 #
-# tool to find a pod by search term
-#   - lists all matching pods & containers
-#   - allows user to select one
-#   - do a range of actions:
-#       - shell into container
-#       - view / tail container logs
-#       - describe pod
+# (C) SpoddyCoder, 2022
+# See DOC_URL for more info on what this is and how to use
+#
 #
 # TODO:
-#   include the container name in search as well as namespace + pod name
-#   main loop is a bit 'bash-y' - use to arrays for better maintainability / readability
+#   include the container name in search (currently searches across namespace + pod name)
+#   main loop is a bit 'bash-y' - use arrays for better maintainability / readability
 #
 
 # version
 VER=0.9.6
+DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 
 ########################
@@ -24,8 +21,7 @@ VER=0.9.6
 CONTAINER_COMMANDS="bash sh log logs tail"
 POD_COMMANDS="describe"
 COMMANDS="$CONTAINER_COMMANDS $POD_COMMANDS"
-# info
-DOC_URL="https://github.com/SpoddyCoder/scube-tools"
+
 
 ########################
 # functions
