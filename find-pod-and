@@ -14,7 +14,7 @@
 #
 
 # version
-VER=0.9.3
+VER=0.9.4
 
 
 ########################
@@ -24,6 +24,8 @@ VER=0.9.3
 CONTAINER_COMMANDS="bash sh log logs tail"
 POD_COMMANDS="describe"
 COMMANDS="$CONTAINER_COMMANDS $POD_COMMANDS"
+# info
+DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 ########################
 # functions
@@ -52,7 +54,7 @@ usage() {
     echo "  mynamespace     - search in mynamespace"
     echo
     echo
-    echo "v${VER} https://github.com/SpoddyCoder/scube-tools/find-pod-and"
+    echo "v${VER} ${DOC_URL}"
     echo
 }
 
