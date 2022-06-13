@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
 #
-# tool to launch the 'kubernetes-dashboard': https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
-# in a useful, but also overly-zealous resource efficient manner
-#   gets token for dashboard login and copies it to clipboard (Mac only - will output to STDOUT if "pbcopy" not found)
-#   re-launches the dashboard pods
-#   start the kubectl proxy
-#   open a browser tab with the dashbaord url
+# (C) SpoddyCoder, 2022
+# See DOC_URL for more info on what this is and how to use
 #
-# listen for CTRL+C to quit
-#   stop the proxy
-#   delete the dashboard pods
 #
-# if the kubectl proxy is already running
-#   will just copy a new token to the clipboard (useful if your sessionm times out)
+# TODO:
+#   Make kubernetes pod scaling optional
 #
 
 # version
 VER=0.9.4
+DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 
 ########################
@@ -116,6 +110,14 @@ function openBrowser()
 ########################
 # start
 #
+
+# display help (also respond to --help)
+if [ "$#" -gt "0" ]; then
+    if [[ "$1" == "help" || "$1" == "--help" ]]; then
+        usage
+        exit 1
+    fi
+fi
 
 trap cleanup INT    # handle CRTL+C quit
 
