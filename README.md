@@ -38,7 +38,7 @@ scube-launch-dashboard
 
 ## `find-pod-and`
 
-Beacuse who hasn't had enough of using `kubectl` to query running pods?... 
+Because who hasn't had enough of using `kubectl` to query running pods?... 
 Then copy-pasting auto-generated deployment id's into a second `kubectl` command... which you often forget the exact syntax for...
 Only to find out it has multiple containers... which you need to `kubectl` query...
 And then rerun th... FML!
@@ -155,9 +155,9 @@ scube-launch-dashboard
 ### Kubernetes Dashboard Service Acccounts
 
 By default this tool generates a token for the `k8s-dashboard-admin` service account. 
-You can generate a token for a different service account by using the configuartion options.
+You can generate a token for a different service account by using the configuration options.
 
-Example yaml to create a `k8s-daashboard-admin` service account with a `cluster-admin` rolebinding...
+Example yaml to create a `k8s-dashboard-admin` service account with a `cluster-admin` rolebinding...
 
 ```
 apiVersion: v1
@@ -180,7 +180,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-Warning: ensure you understand the consequences, this gives the `k8s-daashboard-admin` service account full access to your cluster.
+Warning: ensure you understand the consequences, this gives the `k8s-dashboard-admin` service account full access to your cluster.
 
 ### Configuration
 
