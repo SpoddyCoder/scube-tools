@@ -18,7 +18,7 @@ These should all be considered beta, only my setups / systems have been tested. 
 
 The tools can be run directly, so just copy wherever you need and run, eg: 
 
-`./find-pod-and tail my-app`
+`./find-pod-and bash my-app`
 
 If you want them available system wide, do something like this...
 
