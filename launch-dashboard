@@ -6,10 +6,11 @@
 #
 # TODO:
 #   Make kubernetes pod scaling optional
+#   Add copy+paste support for other systems
 #
 
 # version
-VER=0.9.6
+VER=0.9.7
 DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 
@@ -27,8 +28,12 @@ DEPLOYMENT_SCALE=1
 # browser used to open the dashbaoard proxy url
 BROWSER_PATH="/Applications/Google Chrome.app"
 
+# proxy dashboard url
+DASHBOARD_URI="http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+
 # default query to show when browser opens - this suitable for a cluster admin only...
 LAUNCH_QUERY="workloads?all-namepsaces=&namespace=_all"
+BROWSER_URL="${DASHBOARD_URI}#/${LAUNCH_QUERY}"
 
 # use custom config if found
 if [ -f /etc/scube-tools/launch-dashboard.conf ]; then
@@ -40,6 +45,9 @@ fi
 if [ -f ./.launch-dashboard.conf ]; then
     source ./.launch-dashboard.conf
 fi
+if [ -f ./.scube-launch-dashboard.conf ]; then
+    source ./.scube-launch-dashboard.conf
+fi
 
 
 ########################
@@ -50,9 +58,6 @@ fi
 DASHBAORD_NAMESPACE="kubernetes-dashboard"
 DASHBOARD_DEPLOYMENT_NAME="kubernetes-dashboard"
 METRICS_DEPLOYMENT_NAME="dashboard-metrics-scraper"
-# the proxy dashboard url
-DASHBOARD_URI="http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-BROWSER_URL="${DASHBOARD_URI}#/${LAUNCH_QUERY}"
 # Mac pbcopy path - if this doesn't exist, will just output the token to STDOUT
 PBCOPY_PATH="/usr/bin/pbcopy"
 
@@ -64,7 +69,8 @@ PBCOPY_PATH="/usr/bin/pbcopy"
 # show help
 usage() {
     echo 
-    echo "v${VER} ${DOC_URL}"
+    echo "v${VER}"
+    echo "${DOC_URL}"
     echo
 }
 

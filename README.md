@@ -184,21 +184,23 @@ Warning: ensure you understand the consequences, this gives the `k8s-dashboard-a
 
 ### Configuration
 
-Configurable settings;
+Available ettings;
 
 * service name to gen token for
     * default: `k8s-dashboard-admin`
-* default query on browser open
-    * default `"workloads?all-namepsaces=&namespace=_all`
 * browser app to use
-    * default: `/Applications/Google Chrome.app` - mac chrome
-* scale of kubernetes-dashboard pods when deploying
+    * default: `/Applications/Google Chrome.app` (mac chrome)
+* proxy dashboard url
+    * default: `http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`
+* browser query 
+    * default: `"workloads?all-namepsaces=&namespace=_all`
+* kubernetes-dashboard pods deployment scale
     * default: `1`
 
 The tool looks for config files at different locations, they are applied in the follwoing order, each overriding values in the previous...
 
 * System config: `/etc/scube-tools/launch-dashboard.conf`
 * User config: `~/.scube-tools/launch-dashboard.conf`
-* Directory config: `.launch-dashboard.conf`
+* Directory config: `.launch-dashboard.conf` or `.scube-launch-dashboard.conf`
 
 See the tool for the user config variable names and their descriptions. 

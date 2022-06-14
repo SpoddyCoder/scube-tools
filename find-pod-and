@@ -5,6 +5,8 @@
 #
 #
 # TODO:
+#   [searchterm] arg: add '*' - for "all in selected namespace"
+#       add param and this arg to docs
 #   include the container name in search (currently searches across namespace + pod name)
 #   main loop is a bit 'bash-y' - use arrays for better maintainability / readability
 #
@@ -50,7 +52,8 @@ usage() {
     echo "  mynamespace     - search in mynamespace"
     echo
     echo
-    echo "v${VER} ${DOC_URL}"
+    echo "v${VER}"
+    echo "${DOC_URL}"
     echo
 }
 
