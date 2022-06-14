@@ -1,21 +1,24 @@
 # SpoddyCoder Kube Tools
 
-`scube-tools` is a suite of simple Kubernetes helper tools.
+`scube-tools` is a suite of simple but useful Kubernetes helper tools.
 
 These should all be considered beta, only my setups / systems have been tested. PR's welcome!
 
 
-## Assumptions, Requirements, Optional Installation
+## Requirements / Assumptions
 
 * `kubectl` installed
 * `~/.kube/config` exists
 * All commands use the `current-context` defined in `~/.kube/config`
     * If you manage multiple clusters, check you are using the right context!
-* You have correct permissions for the namespaces + resources you want to query
+* You have correct permissions for the namespaces + resources you want to query / modify
 
-The tools can be run directly, so just copy wherever you need and run...
 
-eg: `./find-pod-and tail my-app`
+## Usage + Optional Installation
+
+The tools can be run directly, so just copy wherever you need and run, eg: 
+
+`./find-pod-and tail my-app`
 
 If you want them available system wide, do something like this...
 
@@ -31,6 +34,7 @@ scube-find-pod-and tail my-app
 
 scube-launch-dashboard
 ```
+
 
 ## `find-pod-and`
 
@@ -130,7 +134,7 @@ This makes accessing the kubernetes dashboard as simple as it can possibly get..
 scube-launch-dashboard
 ```
 
-### What scube does for you
+### Scube is a good boi! Does all this for you...
 
 * Get a new token for dashboard login and copy it to clipboard
     * Mac only - will print to STDOUT if `pbcopy` not found
