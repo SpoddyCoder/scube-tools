@@ -184,7 +184,7 @@ Warning: ensure you understand the consequences, this gives the `k8s-dashboard-a
 
 ### Configuration
 
-Available ettings;
+Available settings;
 
 * service name to gen token for
     * default: `k8s-dashboard-admin`
