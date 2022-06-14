@@ -45,12 +45,12 @@ And then rerun th... FML!
 
 ### Usage
 
-Search running pods by `[searchterm]` and list matches, select one from the list and do `[command]`.
-If a pod has multiple containers, each is shown.
-
 `./find-pod-and [command] [searchterm] [namespace]`
 
-eg: `./find-pod-and bash my-app -A`
+Search running pods by `[searchterm]` and list matches, select one from the list and do `[command]`.
+If a pod has multiple containers, each is shown. eg: 
+
+`./find-pod-and describe my-app -A`
 
 * `[command]`:
     * `bash`        - /bin/bash into container
