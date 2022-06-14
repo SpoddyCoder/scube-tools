@@ -48,7 +48,7 @@ If a pod has multiple containers, each is shown.
 
 eg: `./find-pod-and bash my-app -A`
 
-* `[command]`s:
+* `[command]`:
     * `bash`        - /bin/bash into container
     * `sh`          - /bin/sh into container
     * `log`         - show container logs (`logs` also works)
