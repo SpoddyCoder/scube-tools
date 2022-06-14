@@ -37,6 +37,8 @@ scube-launch-dashboard
 Beacuse who hasn't had enough of using `kubectl` to query running pods, then copying auto-generated deployment id's into a second `kubectl` command?
 Only to find it out is has multiple containers and then needing to query those... FML!
 
+### Usage
+
 Search running pods by `[searchterm]` and list matches, select one from the list and do `[command]`.
 If a pod has multiple containers, each is shown.
 
@@ -119,22 +121,28 @@ linux/amd64, go5.55.5, 555555
 
 ## `launch-dashboard`
 
-Frugal kubernetes-dashboardery! Why have pods running when no-one's looking? 
-This makes accessing the dashboard as simple as it can possibly get...
+Frugal dashboardery! Why have pods running when no-one's looking? 
+This makes accessing the kubernetes dashboard as simple as it can possibly get...
 
 ```
 scube-launch-dashboard
 ```
 
+### What scube does for you
+
 * Get a new token for dashboard login and copy it to clipboard
-    * Mac only - will print to STDOUT if "pbcopy" not found
+    * Mac only - will print to STDOUT if `pbcopy` not found
+    * Service account for the token generation is configurable
 * Redeploy the dashboard pods
+    * Scale is configurable
 * Start the `kubectl proxy`
-* Open a new browser tab with the dashbaord url
-* Listen for CTRL+C quit
-    * Stop the proxy
+* Open the kube dashbaord url with default query `workloads?all-namepsaces=&namespace=_all`
+    * Browser app is configurable
+    * Default query is configurable
+* Listen for `CTRL+C` quit
+    * Stop the `kubectl proxy`
     * Undeploy the dashboard pods
-* If the kubectl proxy is already running
+* If the `kubectl proxy` is already running...
     * Just copy new token to the clipboard
     * Useful if your dashboard browser session times out
 
@@ -173,13 +181,13 @@ Warning: ensure you understand the consequences, this gives the `k8s-daashboard-
 Configurable settings;
 
 * service name to gen token for
-  * default: `k8s-dashboard-admin`
+    * default: `k8s-dashboard-admin`
 * default query on browser open
-  * default `"workloads?all-namepsaces=&namespace=_all`
+    * default `"workloads?all-namepsaces=&namespace=_all`
 * browser app to use
-  * default: `/Applications/Google Chrome.app` - mac chrome
+    * default: `/Applications/Google Chrome.app` - mac chrome
 * scale of kubernetes-dashboard pods when deploying
-  * default: `1`
+    * default: `1`
 
 The tool looks for config files at different locations, they are applied in the follwoing order, each overriding values in the previous...
 
