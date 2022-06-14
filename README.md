@@ -20,8 +20,8 @@ eg: `./find-pod-and tail my-app`
 If you want them available system wide, do something like this...
 
 ```
-sudo cp scube-tools/find-pod-and /usr/local/bin/scube-find-pod-and
-sudo cp scube-tools/launch-dashboard /usr/local/bin/scube-launch-dashboard
+sudo cp find-pod-and /usr/local/bin/scube-find-pod-and
+sudo cp launch-dashboard /usr/local/bin/scube-launch-dashboard
 ```
 
 Then run the commands as you would any other on your system (assuming `/usr/local/bin/` is in your `$PATH`)...
