@@ -35,6 +35,7 @@ scube-launch-dashboard
 ## `find-pod-and`
 
 Beacuse who hasn't had enough of using `kubectl` to query running pods, then copying auto-generated deployment id's into a second `kubectl` command?
+Only to find it out is has multiple containers and then needing to query those... FML!
 
 Search running pods by `[searchterm]` and list matches, select one from the list and do `[command]`.
 If a pod has multiple containers, each is shown.
