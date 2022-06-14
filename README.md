@@ -34,8 +34,10 @@ scube-launch-dashboard
 
 ## `find-pod-and`
 
-Beacuse who hasn't had enough of using `kubectl` to query running pods, then copying auto-generated deployment id's into a second `kubectl` command?
-Only to find it out is has multiple containers and then needing to query those... FML!
+Beacuse who hasn't had enough of using `kubectl` to query running pods?... 
+Then copy-pasting auto-generated deployment id's into a second `kubectl` command... which you often forget the exact syntax for...
+Only to find out it has multiple containers... which you need to `kubectl` query...
+And then rerun th... FML!
 
 ### Usage
 
