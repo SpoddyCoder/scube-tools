@@ -9,7 +9,7 @@
 #
 
 # version
-VER=0.9.5
+VER=0.9.6
 DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 
@@ -60,6 +60,13 @@ PBCOPY_PATH="/usr/bin/pbcopy"
 ########################
 # functions
 #
+
+# show help
+usage() {
+    echo 
+    echo "v${VER} ${DOC_URL}"
+    echo
+}
 
 # cleanup resources before quitting
 # optionally exit with error code 1 by passing $1="error"
