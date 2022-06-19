@@ -5,14 +5,13 @@
 #
 #
 # TODO:
-#   [searchterm] arg: add '*' - for "all in selected namespace"
-#       add param and this arg to docs
 #   include the container name in search (currently searches across namespace + pod name)
+#   allow user to select multiple/all matching pods and run the [command] on each
 #   main loop is a bit 'bash-y' - use arrays for better maintainability / readability
 #
 
 # version
-VER=0.9.7
+VER=0.9.8
 DOC_URL="https://github.com/SpoddyCoder/scube-tools"
 
 
@@ -38,7 +37,7 @@ usage() {
     echo
     echo "eg: $0 bash my-app -A"
     echo
-    echo "commands:"
+    echo "[command]"
     echo "  bash            - /bin/bash into a container"
     echo "  sh              - /bin/sh into a container"
     echo "  log             - show container logs (logs also works)"
@@ -46,7 +45,11 @@ usage() {
     echo "  describe        - describe the pod"
     echo "  help            - show usage info (--help also works)"
     echo
-    echo "namespace (optional):"
+    echo "[searchterm]"
+    echo "  somestring      - search for pods matching somestring"
+    echo "  -               - match-all, return all pods in selected namespace"
+    echo
+    echo "[namespace] (optional)"
     echo "  no value        - search the current namespace in the current context"
     echo "  -A              - search across all namepsaces"
     echo "  mynamespace     - search in mynamespace"
@@ -119,22 +122,24 @@ fi
 
 # lets go...
 search_label=$( [ "$pod_command" = true ] && echo "pods" || echo "containers" )
-echo "Searching for $search_label matching '$search' $ns_label"
+if [ "$search" == "-" ]; then
+    echo "Returning all $search_label $ns_label"
+else
+    echo "Searching for $search_label matching '$search' $ns_label"
+fi
 
 # query pods
 if [ "$namespace" == "-A" ]; then
     podlist=$(kubectl get pod -A -o wide)
-else
-    podlist=$(kubectl get pod -n $namespace -o wide)
-fi
-
-# search podlist
-if [ "$namespace" == "-A" ]; then
-    # by both name + namespace
+    # & search by both name + namespace
     results=$(echo "$podlist" | tr -s ' ' | awk '{print $1" "$2}' | grep $search)
 else
-    # by name only
+    podlist=$(kubectl get pod -n $namespace -o wide)
+    # and search by name only
     results=$(echo "$podlist" | tr -s ' ' | awk '{print $1}' | grep $search)
+fi
+if [ "$search" != "-" ]; then
+    results=$(echo "$results" | grep $search)
 fi
 
 # get containers running inside each pod
