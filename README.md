@@ -2,7 +2,7 @@
 
 `scube-tools` is a suite of simple but useful Kubernetes helper tools.
 
-These should all be considered beta, only my setups / systems have been tested. PR's welcome!
+These should all be considered beta, only my setups / systems have been tested so far. PR's welcome!
 
 
 ## Requirements / Assumptions
@@ -59,6 +59,10 @@ If a pod has multiple containers, each is shown. eg:
     * `tail`        - tail container logs
     * `describe`    - describe the pod
     * `help`        - show usage info (`--help` also works)
+
+* `[searchterm]`:
+    * `somestring`  - search for pods matching somestring (also searches namespaces)
+    * `-`           - match-all, return all pods in selected namespace
 
 * `[namespace]` (optional):
     * no value      - search the current namespace in the current context
@@ -144,12 +148,13 @@ scube-launch-dashboard
 * Start the `kubectl proxy`
 * Open the kube dashbaord url with default query `workloads?all-namepsaces=&namespace=_all`
     * Browser app is configurable
+    * Kube proxy dash URL is configurable
     * Default query is configurable
-* Listen for `CTRL+C` quit
+* Listen for `CTRL+C` quit and cleans up
     * Stop the `kubectl proxy`
     * Undeploy the dashboard pods
 * If the `kubectl proxy` is already running...
-    * Just copy new token to the clipboard
+    * Just copy new token to the clipboard (or print to STDOUT)
     * Useful if your dashboard browser session times out
 
 ### Kubernetes Dashboard Service Acccounts
@@ -186,21 +191,27 @@ Warning: ensure you understand the consequences, this gives the `k8s-dashboard-a
 
 Available settings;
 
-* service name to gen token for
+* service name for token generation
     * default: `k8s-dashboard-admin`
-* browser app to use
+* browser app
     * default: `/Applications/Google Chrome.app` (mac chrome)
 * proxy dashboard url
     * default: `http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`
 * browser query 
     * default: `"workloads?all-namepsaces=&namespace=_all`
-* kubernetes-dashboard pods deployment scale
+* `kubernetes-dashboard` pods deployment scale
     * default: `1`
 
-The tool looks for config files at different locations, they are applied in the follwoing order, each overriding values in the previous...
+The tool looks for config files at different locations, they are applied in the following order, each overriding values in the previous...
 
+* Default config: tool source code, eg: `/usr/local/bin/scube-launch-dashboard`
 * System config: `/etc/scube-tools/launch-dashboard.conf`
 * User config: `~/.scube-tools/launch-dashboard.conf`
 * Directory config: `.launch-dashboard.conf` or `.scube-launch-dashboard.conf`
 
 See the tool for the user config variable names and their descriptions. 
+
+
+## Contributing
+
+Contributions very welcome! Something wrong? Could be better? Additional use-cases? Please post in the issues forum or submit a PR. See the tool source code for outstanding ideas / todo's.
