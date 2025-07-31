@@ -148,21 +148,32 @@ if (( $(kubectl get replicaset -n $DASHBAORD_NAMESPACE | grep $DASHBOARD_DEPLOYM
 fi
 
 # start the kubectl proxy if not already running & open the browser
+PROXY_LOCK_FILE="/tmp/kubectl-proxy.lock"
+
+# Check if proxy is already running
 if [ "$(ps aux | grep -w '[k]ubectl proxy' | wc -l)" -eq "0" ]; then
-
-    echo "Starting kubectl proxy"
-    # put the process in the background and get the pid
-    kubectl proxy &
-    BG_PID=$!
-    sleep 1 # allow a beat for the proxy to init
-    openBrowser
-    echo "kubectl proxy is running (CTRL+C to exit)"
-    wait
-
+    # Use file lock to prevent race condition
+    if (set -C; : > "$PROXY_LOCK_FILE") 2>/dev/null; then
+        # We got the lock, start the proxy
+        echo "Starting kubectl proxy"
+        kubectl proxy &
+        BG_PID=$!
+        sleep 2 # allow more time for the proxy to init
+        openBrowser
+        echo "kubectl proxy is running (CTRL+C to exit)"
+        rm -f "$PROXY_LOCK_FILE"  # Release lock
+        wait
+    else
+        # Another instance is starting the proxy, wait and then open browser
+        echo "Another instance is starting kubectl proxy, waiting..."
+        while [ -f "$PROXY_LOCK_FILE" ]; do
+            sleep 1
+        done
+        sleep 1 # Additional wait to ensure proxy is ready
+        openBrowser
+    fi
 else
-
     openBrowser
-
 fi 
 
 exit 0
