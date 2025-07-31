@@ -132,14 +132,14 @@ fi
 if [ "$namespace" == "-A" ]; then
     podlist=$(kubectl get pod -A -o wide)
     # & search by both name + namespace
-    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1" "$2}' | grep $search)
+    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1" "$2}' | grep "$search")
 else
     podlist=$(kubectl get pod -n $namespace -o wide)
     # and search by name only
-    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1}' | grep $search)
+    results=$(echo "$podlist" | tr -s ' ' | awk '{print $1}' | grep "$search")
 fi
 if [ "$search" != "-" ]; then
-    results=$(echo "$results" | grep $search)
+    results=$(echo "$results" | grep "$search")
 fi
 
 # get containers running inside each pod
@@ -154,9 +154,9 @@ while read pod; do
         podns=$namespace
         podname=$(echo $pod | awk '{print $1}')
     fi
-    if [ ! -z $podname ]; then
+    if [ ! -z "$podname" ]; then
         # check if pod has containers (should)
-        containers=$(kubectl get pods $podname -n $podns -o jsonpath='{.spec.containers[*].name}')
+        containers=$(kubectl get pods "$podname" -n "$podns" -o jsonpath='{.spec.containers[*].name}')
         #containers="nginx varnish"     # test mutliple container output
         if [ "$?" != "0" ]; then
             # in the event of an error, just show the pod info, pod level commands should still work
@@ -173,7 +173,7 @@ while read pod; do
     fi
 done <<< "$results"
 
-if [ $(echo "$results" | xargs | wc -l) == 0 ]; then
+if [ "$(echo "$results" | xargs | wc -l)" == 0 ]; then
     echo "None found"
     exit 0
 else
@@ -189,13 +189,13 @@ if [ -z "$selected" ]; then
     exit 0
 fi
 entry=$(echo "$container_list" | grep "^$selected")
-if [ $(echo "$entry" | xargs | wc -l) == 0 ]; then
+if [ "$(echo "$entry" | xargs | wc -l)" == 0 ]; then
     errMsg "invalid selection"
     exit 1
 fi
-ns=$(echo $entry | awk '{print $2}')
-pod=$(echo $entry | awk '{print $3}')
-container=$(echo $entry | awk '{print $4}')
+ns=$(echo "$entry" | awk '{print $2}')
+pod=$(echo "$entry" | awk '{print $3}')
+container=$(echo "$entry" | awk '{print $4}')
 
 # and run the selected command on it...
 echo
